@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="XX大学计算机协会官方网站 —— 技术驱动未来，代码改变世界。提供技术学习路线、活动资讯、开源项目与赛事信息。" />
+<meta name="theme-color" content="#1E3A8A" />
+<title>XX大学计算机协会 | 技术驱动未来，代码改变世界</title>
+
+<!-- ============================================================
+     0. 依赖与全局配置
+     - Tailwind CSS (CDN)
+     - Google Fonts: Inter / Roboto（英文），中文回退系统黑体
+     - Font Awesome 6（图标库）
+     - Tailwind 自定义主题：品牌色 / 圆角 / 阴影 / 动画
+     ============================================================ -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        /* 品牌主色：科技蓝；辅助色：亮青 / 荧光绿 */
+        colors: {
+          brand: {
+            deep: '#1E3A8A',
+            600: '#2563EB',
+            100: '#DBEAFE',
+            ink: '#0F172A' // 深色区块背景
+          },
+          cyanx: '#06B6D4',
+          neon: '#22C55E'
+        },
+        fontFamily: {
+          sans: ['Inter', 'Roboto', 'system-ui', '-apple-system', 'Segoe UI',
+                 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif']
+        },
+        /* 圆角规范：卡片 12px / 按钮 8px / 图片 16px */
+        borderRadius: { card: '12px', btn: '8px' },
+        boxShadow: {
+          card: '0 4px 14px rgba(15, 23, 42, .06)',
+          'card-hover': '0 18px 40px -12px rgba(30, 58, 138, .32)'
+        },
+        keyframes: {
+          fadeUp: { '0%': { opacity: 0, transform: 'translateY(28px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+          softPulse: { '0%,100%': { opacity: .45 }, '50%': { opacity: .9 } }
+        },
+        animation: {
+          fadeUp: 'fadeUp .85s cubic-bezier(.2,.7,.3,1) both',
+          softPulse: 'softPulse 4s ease-in-out infinite'
+        }
+      }
+    }
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563EB'/%3E%3Cpath d='M20 22l-8 10 8 10M44 22l8 10-8 10M37 16l-10 32' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+<style>
+  /* ============================================================
+     全局基础样式（补充 Tailwind 无法直接表达的部分）
+     ============================================================ */
+  html { scroll-padding-top: 5rem; }           /* 锚点跳转避开固定导航 */
+  body { -webkit-font-smoothing: antialiased; }
+
+  /* --- 滚动进入视口时的「淡入上滑」动画 --- */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .75s cubic-bezier(.2,.7,.3,1), transform .75s cubic-bezier(.2,.7,.3,1);
+    will-change: opacity, transform;
+  }
+  [data-reveal].is-visible { opacity: 1; transform: none; }
+  /* 尊重系统「减少动态效果」设置：关闭位移与动画 */
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .animate-fadeUp, .animate-softPulse { animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* --- 顶部导航菜单：悬浮下划线动画 --- */
+  .nav-underline::after {
+    content: ''; position: absolute; left: 0; bottom: -6px;
+    height: 2px; width: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, #2563EB, #06B6D4);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .32s cubic-bezier(.2,.7,.3,1);
+  }
+  .nav-underline:hover::after, .nav-underline.is-active::after { transform: scaleX(1); }
+
+  /* --- Hero 轮播：淡入淡出 + 背景缓慢放大 --- */
+  .hero-slide { opacity: 0; transition: opacity 1s ease; pointer-events: none; }
+  .hero-slide.is-active { opacity: 1; pointer-events: auto; }
+  .hero-bg { transform: scale(1.04); transition: transform 7s ease-out; }
+  .hero-slide.is-active .hero-bg { transform: scale(1.13); }
+
+  /* --- 卡片统一悬浮效果：上浮 + 阴影加深 --- */
+  .lift { transition: transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s ease; }
+  .lift:hover { transform: translateY(-8px); box-shadow: 0 18px 40px -12px rgba(30,58,138,.32); }
+
+  /* --- 主按钮：悬浮变色 + 轻微放大 --- */
+  .btn { transition: transform .25s ease, background-color .25s ease, color .25s ease, box-shadow .25s ease, border-color .25s ease; }
+  .btn:hover { transform: translateY(-2px) scale(1.035); }
+
+  /* --- 数字滚动 / 倒计时等使用的等宽数字 --- */
+  .tnum { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+
+  /* --- 隐藏横向滚动条（移动端新闻横滑） --- */
+  .no-bar::-webkit-scrollbar { display: none; }
+  .no-bar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* 移动端菜单展开动画 */
+  #mobileMenu { transition: max-height .4s ease, opacity .3s ease; max-height: 0; opacity: 0; overflow: hidden; }
+  #mobileMenu.is-open { max-height: 32rem; opacity: 1; }
+
+  /* 轮播箭头：仅悬浮 / 聚焦时明显显示 */
+  .hero-arrow { opacity: 0; transition: opacity .3s ease, background-color .3s ease; }
+  #hero:hover .hero-arrow, .hero-arrow:focus-visible { opacity: 1; }
+  @media (max-width: 767px) { .hero-arrow { opacity: .75; } }
+</style>
+</head>
+
+<body class="bg-white font-sans text-slate-700 antialiased">
+
+<!-- ============================================================
+     模块 1：顶部导航栏 Navbar
+     - 左侧：文字 Logo + 协会名称
+     - 中间：主导航菜单（当前页高亮 + 悬浮下划线动画）
+     - 右侧：搜索按钮 + 登录/注册（已登录显示头像下拉菜单）
+     - 滚动后固定顶部、背景转白并加阴影；<1024px 折叠为汉堡菜单
+     ============================================================ -->
+<header id="navbar"
+        class="fixed inset-x-0 top-0 z-50 bg-transparent transition-all duration-300"
+        data-nav-offset="true">
+
+  <!-- 导航外层容器：移动端 pt-20 用于避开固定导航 -->
+  <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+
+    <!-- 1.1 品牌区 -->
+    <a href="#hero" class="group flex shrink-0 items-center gap-2.5" aria-label="XX大学计算机协会首页">
+      <span class="grid h-11 w-11 place-items-center rounded-card bg-gradient-to-br from-brand-deep to-cyanx text-white shadow-md transition-transform duration-300 group-hover:scale-105">
+        <i class="fa-solid fa-code text-lg" aria-hidden="true"></i>
+      </span>
+      <span class="flex flex-col leading-tight">
+        <span id="brandName" data-theme-ink class="text-[17px] font-extrabold tracking-tight transition-colors duration-300 sm:text-lg">XX大学计算机协会</span>
+        <span id="brandSub" class="text-[10px] font-semibold uppercase tracking-[.18em] text-cyan-200 transition-colors duration-300">Computer Association</span>
+      </span>
+    </a>
+
+    <!-- 1.2 桌面端导航菜单（>=1024px 展开；768~1023px 折叠为汉堡菜单） -->
+    <ul id="desktopMenu" class="hidden items-center gap-7 lg:flex">
+      <li><a href="#hero"      class="nav-underline is-active relative text-[15px] font-semibold transition-colors duration-300" data-navlink data-theme-ink>首页</a></li>
+      <li><a href="#about"     class="nav-underline relative text-[15px] font-medium transition-colors duration-300" data-navlink data-theme-ink>协会介绍</a></li>
+      <li><a href="#news"      class="nav-underline relative text-[15px] font-medium transition-colors duration-300" data-navlink data-theme-ink>新闻公告</a></li>
+      <li><a href="#events"    class="nav-underline relative text-[15px] font-medium transition-colors duration-300" data-navlink data-theme-ink>活动</a></li>
+      <li><a href="#resources" class="nav-underline relative text-[15px] font-medium transition-colors duration-300" data-navlink data-theme-ink>技术资源</a></li>
+      <li><a href="#events"    class="nav-underline relative text-[15px] font-medium transition-colors duration-300" data-navlink data-theme-ink>赛事项目</a></li>
+      <li><a href="#join"      class="nav-underline relative text-[15px] font-medium transition-colors duration-300" data-navlink data-theme-ink>加入我们</a></li>
+    </ul>
+
+    <!-- 1.3 右侧操作区 -->
+    <div class="flex items-center gap-2 sm:gap-3">
+
+      <!-- 搜索：点击展开输入框（原生 JS 控制） -->
+      <div class="relative hidden sm:block">
+        <label for="searchInput" class="sr-only">站内搜索</label>
+        <input id="searchInput" type="search" placeholder="搜索文章 / 活动…"
+               class="h-10 w-10 origin-right scale-x-0 rounded-btn border border-white/30 bg-white/95 px-3 text-sm text-slate-700 opacity-0 outline-none transition-all duration-300 focus:border-brand-600 focus:ring-2 focus:ring-cyanx/40" />
+        <button id="searchToggle" type="button" aria-label="打开搜索框" data-theme-ink
+                class="absolute right-0 top-0 grid h-10 w-10 place-items-center rounded-btn transition hover:bg-brand-100/70">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <!-- 登录 / 注册（未登录态） -->
+      <div id="authGuest" class="hidden items-center gap-2 md:flex">
+        <button type="button" data-open-modal="login" data-theme-ink
+                class="btn rounded-btn px-3 py-2 text-sm font-semibold transition hover:bg-brand-100/70">登录</button>
+        <button type="button" data-open-modal="login" id="btnRegister"
+                class="btn rounded-btn bg-gradient-to-r from-brand-600 to-cyanx px-4 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg">注册</button>
+      </div>
+
+      <!-- 已登录头像下拉（默认隐藏，由 JS 切换） -->
+      <div id="authUser" class="relative hidden">
+        <button id="avatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="用户菜单"
+                class="flex items-center gap-2 rounded-full p-0.5 transition hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyanx">
+          <img src="https://picsum.photos/seed/avatar/80/80" alt="用户头像"
+               class="h-9 w-9 rounded-full border-2 border-white/70 object-cover" data-img />
+          <i class="fa-solid fa-chevron-down hidden text-xs sm:block" data-theme-ink aria-hidden="true"></i>
+        </button>
+        <div id="avatarMenu" class="invisible absolute right-0 top-full mt-3 w-52 translate-y-[-6px] rounded-card border border-slate-100 bg-white p-2 opacity-0 shadow-xl transition-all duration-200">
+          <p class="px-3 py-2 text-xs text-slate-400">已登录：示例用户</p>
+          <a href="#" class="flex items-center gap-3 rounded-btn px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-600"><i class="fa-regular fa-user w-4" aria-hidden="true"></i>个人中心</a>
+          <a href="#" class="flex items-center gap-3 rounded-btn px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-600"><i class="fa-regular fa-bookmark w-4" aria-hidden="true"></i>我的活动</a>
+          <a href="#" class="flex items-center gap-3 rounded-btn px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-600"><i class="fa-solid fa-gear w-4" aria-hidden="true"></i>账号设置</a>
+          <div class="my-1 h-px bg-slate-100"></div>
+          <button type="button" id="logoutBtn" class="flex w-full items-center gap-3 rounded-btn px-3 py-2 text-left text-sm text-rose-500 transition hover:bg-rose-50"><i class="fa-solid fa-arrow-right-from-bracket w-4" aria-hidden="true"></i>退出登录</button>
+        </div>
+      </div>
+
+      <!-- 汉堡菜单按钮（<1024px 显示） -->
+      <button id="hamburger" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="mobileMenu"
+              class="grid h-10 w-10 place-items-center rounded-btn text-white transition hover:bg-white/15 lg:hidden">
+        <i id="hamburgerIcon" class="fa-solid fa-bars text-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 1.4 移动端折叠菜单 -->
+  <div id="mobileMenu" class="border-t border-slate-100 bg-white/98 backdrop-blur lg:hidden">
+    <ul class="mx-auto max-w-7xl space-y-1 px-4 py-3 sm:px-6">
+      <li><a href="#hero"      class="flex items-center justify-between rounded-btn px-3 py-3 text-[15px] font-semibold" data-navlink data-close-menu data-current>首页 <i class="fa-solid fa-chevron-right text-xs opacity-50" aria-hidden="true"></i></a></li>
+      <li><a href="#about"     class="flex items-center justify-between rounded-btn px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-50" data-navlink data-close-menu>协会介绍 <i class="fa-solid fa-chevron-right text-xs opacity-40" aria-hidden="true"></i></a></li>
+      <li><a href="#news"      class="flex items-center justify-between rounded-btn px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-50" data-navlink data-close-menu>新闻公告 <i class="fa-solid fa-chevron-right text-xs opacity-40" aria-hidden="true"></i></a></li>
+      <li><a href="#events"    class="flex items-center justify-between rounded-btn px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-50" data-navlink data-close-menu>活动 <i class="fa-solid fa-chevron-right text-xs opacity-40" aria-hidden="true"></i></a></li>
+      <li><a href="#resources" class="flex items-center justify-between rounded-btn px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-50" data-navlink data-close-menu>技术资源 <i class="fa-solid fa-chevron-right text-xs opacity-40" aria-hidden="true"></i></a></li>
+      <li><a href="#events"    class="flex items-center justify-between rounded-btn px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-50" data-navlink data-close-menu>赛事项目 <i class="fa-solid fa-chevron-right text-xs opacity-40" aria-hidden="true"></i></a></li>
+      <li><a href="#join"      class="flex items-center justify-between rounded-btn px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-50" data-navlink data-close-menu>加入我们 <i class="fa-solid fa-chevron-right text-xs opacity-40" aria-hidden="true"></i></a></li>
+    </ul>
+    <div class="mx-auto flex max-w-7xl items-center gap-3 px-4 pb-4 sm:px-6">
+      <button type="button" data-open-modal="login"
+              class="btn flex-1 rounded-btn border border-slate-200 py-2.5 text-sm font-semibold text-slate-600 hover:border-brand-600 hover:text-brand-600">登录</button>
+      <button type="button" data-open-modal="login"
+              class="btn flex-1 rounded-btn bg-gradient-to-r from-brand-600 to-cyanx py-2.5 text-sm font-semibold text-white shadow-md">注册</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ============================================================
+     模块 2：首屏 Hero 轮播
+     - 4 张幻灯片（CSS 渐变模拟背景图），高 80vh（可切换 min-h-screen）
+     - 自动播放 5s / 圆点指示器 / 左右箭头 / 悬浮暂停 / 触屏滑动
+     - 半透明深色遮罩保证文字可读；文字渐显动画
+     ============================================================ -->
+<section id="hero" class="relative h-[80vh] min-h-[560px] w-full overflow-hidden bg-brand-ink" tabindex="0" aria-roledescription="carousel" aria-label="协会宣传轮播">
+
+  <!-- 2.1 幻灯片容器 -->
+  <div id="heroSlides" class="absolute inset-0">
+
+    <!-- Slide 1 -->
+    <article class="hero-slide is-active absolute inset-0" data-slide aria-hidden="false">
+      <div class="hero-bg absolute inset-0 bg-gradient-to-br from-brand-deep via-brand-600 to-cyanx"></div>
+      <div class="absolute inset-0 opacity-[.18]"
+           style="background-image:linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);background-size:56px 56px"></div>
+      <div class="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-cyanx/30 blur-3xl"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/55 to-slate-900/30"></div>
+
+      <div class="relative mx-auto flex h-full max-w-7xl items-center px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+        <div class="max-w-2xl text-white">
+          <span class="animate-fadeUp mb-5 inline-flex items-center gap-2 rounded-full border border-cyanx/40 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur">
+            <span class="h-2 w-2 animate-softPulse rounded-full bg-neon"></span>2025 秋季招新进行中
+          </span>
+          <h1 class="animate-fadeUp text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl lg:text-6xl" style="animation-delay:.1s">
+            XX大学计算机协会
+          </h1>
+          <p class="animate-fadeUp mt-5 text-lg font-light text-blue-50/95 sm:text-xl" style="animation-delay:.22s">
+            技术驱动未来，代码改变世界
+          </p>
+          <p class="animate-fadeUp mt-3 max-w-xl text-sm leading-relaxed text-blue-100/80 sm:text-base" style="animation-delay:.3s">
+            汇聚全校热爱编程与技术的同学，一起写代码、做项目、打比赛、聊技术。
+          </p>
+          <div class="animate-fadeUp mt-9 flex flex-wrap gap-4" style="animation-delay:.42s">
+            <a href="#join" class="btn inline-flex items-center gap-2 rounded-btn bg-gradient-to-r from-cyanx to-neon px-7 py-3.5 text-base font-bold text-slate-900 shadow-lg shadow-cyanx/30 hover:shadow-xl">
+              <i class="fa-solid fa-rocket" aria-hidden="true"></i>立即加入
+            </a>
+            <a href="#about" class="btn inline-flex items-center gap-2 rounded-btn border border-white/40 bg-white/10 px-7 py-3.5 text-base font-semibold text-white backdrop-blur hover:bg-white/20">
+              <i class="fa-regular fa-circle-play" aria-hidden="true"></i>了解我们
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 2 -->
+    <article class="hero-slide absolute inset-0" data-slide aria-hidden="true">
+      <div class="hero-bg absolute inset-0 bg-gradient-to-br from-slate-900 via-brand-deep to-cyanx/80"></div>
+      <div class="absolute inset-0 opacity-[.15]"
+           style="background-image:radial-gradient(rgba(255,255,255,.55) 1.5px,transparent 1.5px);background-size:34px 34px"></div>
+      <div class="absolute -bottom-28 -left-20 h-96 w-96 rounded-full bg-brand-600/40 blur-3xl"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/55 to-slate-900/30"></div>
+
+      <div class="relative mx-auto flex h-full max-w-7xl items-center px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+        <div class="max-w-2xl text-white">
+          <span class="animate-fadeUp mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur">
+            <i class="fa-solid fa-trophy text-cyanx" aria-hidden="true"></i>ACM / 蓝桥杯 / 挑战杯
+          </span>
+          <h2 class="animate-fadeUp text-3xl font-extrabold leading-tight sm:text-5xl" style="animation-delay:.1s">以赛促学，与强者同行</h2>
+          <p class="animate-fadeUp mt-5 text-lg font-light text-blue-50/95" style="animation-delay:.22s">校内外赛事组队、赛前集训、赛后复盘</p>
+          <p class="animate-fadeUp mt-3 max-w-xl text-sm leading-relaxed text-blue-100/80 sm:text-base" style="animation-delay:.3s">
+            每年组织 20+ 场算法集训与模拟赛，累计斩获省级以上奖项 15+ 项。
+          </p>
+          <div class="animate-fadeUp mt-9 flex flex-wrap gap-4" style="animation-delay:.42s">
+            <a href="#events" class="btn inline-flex items-center gap-2 rounded-btn bg-gradient-to-r from-cyanx to-neon px-7 py-3.5 text-base font-bold text-slate-900 shadow-lg shadow-cyanx/30 hover:shadow-xl">
+              <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>查看赛事
+            </a>
+            <a href="#resources" class="btn inline-flex items-center gap-2 rounded-btn border border-white/40 bg-white/10 px-7 py-3.5 text-base font-semibold text-white backdrop-blur hover:bg-white/20">
+              <i class="fa-solid fa-book-open" aria-hidden="true"></i>备赛资料
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 3 -->
+    <article class="hero-slide absolute inset-0" data-slide aria-hidden="true">
+      <div class="hero-bg absolute inset-0 bg-gradient-to-tr from-cyanx/85 via-brand-deep to-slate-900"></div>
+      <div class="absolute inset-0 opacity-[.16]"
+           style="background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.5) 0 2px,transparent 2px 22px)"></div>
+      <div class="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-neon/25 blur-3xl"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/55 to-slate-900/30"></div>
+
+      <div class="relative mx-auto flex h-full max-w-7xl items-center px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+        <div class="max-w-2xl text-white">
+          <span class="animate-fadeUp mb-5 inline-flex items-center gap-2 rounded-full border border-neon/40 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur">
+            <i class="fa-solid fa-code-branch text-neon" aria-hidden="true"></i>开源 & 实战项目
+          </span>
+          <h2 class="animate-fadeUp text-3xl font-extrabold leading-tight sm:text-5xl" style="animation-delay:.1s">从第一行代码，到真实项目上线</h2>
+          <p class="animate-fadeUp mt-5 text-lg font-light text-blue-50/95" style="animation-delay:.22s">30+ 在研项目，前后端 / AI / 移动端全方向覆盖</p>
+          <p class="animate-fadeUp mt-3 max-w-xl text-sm leading-relaxed text-blue-100/80 sm:text-base" style="animation-delay:.3s">
+            学长学姐带教，Git 协作、代码评审、部署运维一次走完完整工程流程。
+          </p>
+          <div class="animate-fadeUp mt-9 flex flex-wrap gap-4" style="animation-delay:.42s">
+            <a href="#resources" class="btn inline-flex items-center gap-2 rounded-btn bg-gradient-to-r from-cyanx to-neon px-7 py-3.5 text-base font-bold text-slate-900 shadow-lg shadow-cyanx/30 hover:shadow-xl">
+              <i class="fa-solid fa-diagram-project" aria-hidden="true"></i>加入项目
+            </a>
+            <a href="#news" class="btn inline-flex items-center gap-2 rounded-btn border border-white/40 bg-white/10 px-7 py-3.5 text-base font-semibold text-white backdrop-blur hover:bg-white/20">
+              <i class="fa-regular fa-newspaper" aria-hidden="true"></i>最新动态
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Slide 4 -->
+    <article class="hero-slide absolute inset-0" data-slide aria-hidden="true">
+      <div class="hero-bg absolute inset-0 bg-gradient-to-br from-brand-deep via-slate-900 to-neon/70"></div>
+      <div class="absolute inset-0 opacity-[.14]"
+           style="background-image:linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px);background-size:80px 80px"></div>
+      <div class="absolute left-1/3 top-1/4 h-72 w-72 rounded-full bg-cyanx/25 blur-3xl"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/55 to-slate-900/30"></div>
+
+      <div class="relative mx-auto flex h-full max-w-7xl items-center px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+        <div class="max-w-2xl text-white">
+          <span class="animate-fadeUp mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide backdrop-blur">
+            <i class="fa-solid fa-users-line text-cyanx" aria-hidden="true"></i>技术社群 · 每周分享
+          </span>
+          <h2 class="animate-fadeUp text-3xl font-extrabold leading-tight sm:text-5xl" style="animation-delay:.1s">和 500+ 同学一起成长</h2>
+          <p class="animate-fadeUp mt-5 text-lg font-light text-blue-50/95" style="animation-delay:.22s">技术分享会 · 项目组会 · 学长带教</p>
+          <p class="animate-fadeUp mt-3 max-w-xl text-sm leading-relaxed text-blue-100/80 sm:text-base" style="animation-delay:.3s">
+            无论你是零基础小白还是竞赛选手，这里都有适合你的位置。
+          </p>
+          <div class="animate-fadeUp mt-9 flex flex-wrap gap-4" style="animation-delay:.42s">
+            <a href="#join" class="btn inline-flex items-center gap-2 rounded-btn bg-gradient-to-r from-cyanx to-neon px-7 py-3.5 text-base font-bold text-slate-900 shadow-lg shadow-cyanx/30 hover:shadow-xl">
+              <i class="fa-solid fa-user-plus" aria-hidden="true"></i>成为会员
+            </a>
+            <a href="#footer" class="btn inline-flex items-center gap-2 rounded-btn border border-white/40 bg-white/10 px-7 py-3.5 text-base font-semibold text-white backdrop-blur hover:bg-white/20">
+              <i class="fa-regular fa-comments" aria-hidden="true"></i>联系我们
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- 2.2 左右切换箭头 -->
+  <button id="heroPrev" type="button" aria-label="上一张"
+          class="hero-arrow absolute left-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-slate-900/40 text-white backdrop-blur transition hover:bg-brand-600 sm:left-6">
+    <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+  </button>
+  <button id="heroNext" type="button" aria-label="下一张"
+          class="hero-arrow absolute right-3 top-1/2 z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/25 bg-slate-900/40 text-white backdrop-blur transition hover:bg-brand-600 sm:right-6">
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+  </button>
+
+  <!-- 2.3 圆点指示器 -->
+  <div id="heroDots" class="absolute bottom-24 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2.5" role="tablist" aria-label="轮播切换"></div>
+
+  <!-- 2.4 底部滚动提示 -->
+  <a href="#stats" class="absolute bottom-7 left-1/2 z-20 hidden -translate-x-1/2 flex-col items-center gap-1 text-xs text-white/70 transition hover:text-white sm:flex">
+    <span>向下滚动</span>
+    <i class="fa-solid fa-chevron-down animate-bounce" aria-hidden="true"></i>
+  </a>
+</section>
+
+<!-- ============================================================
+     模块 3：数据概览 Stats Bar
+     - 4 个数据卡片，进入视口时数字滚动增长
+     ============================================================ -->
+<section id="stats" class="relative z-10 -mt-16 px-4 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+    <div class="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-[0_20px_50px_-20px_rgba(30,58,138,.35)] sm:gap-6 sm:p-7 lg:grid-cols-4">
+
+      <!-- 数据项 1：会员数 -->
+      <div class="group flex flex-col items-center rounded-card px-2 py-4 text-center transition hover:bg-slate-50/80" data-reveal data-delay="0">
+        <span class="mb-3 grid h-12 w-12 place-items-center rounded-card bg-brand-100 text-brand-600 transition group-hover:bg-brand-600 group-hover:text-white">
+          <i class="fa-solid fa-users text-xl" aria-hidden="true"></i>
+        </span>
+        <p class="tnum text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">
+          <span class="counter" data-target="500" data-duration="1800">0</span><span class="text-cyanx">+</span>
+        </p>
+        <p class="mt-1.5 text-sm font-medium text-slate-500">协会会员</p>
+      </div>
+
+      <!-- 数据项 2：活动数 -->
+      <div class="group flex flex-col items-center rounded-card px-2 py-4 text-center transition hover:bg-slate-50/80" data-reveal data-delay="100">
+        <span class="mb-3 grid h-12 w-12 place-items-center rounded-card bg-cyan-50 text-cyanx transition group-hover:bg-cyanx group-hover:text-white">
+          <i class="fa-regular fa-calendar-check text-xl" aria-hidden="true"></i>
+        </span>
+        <p class="tnum text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">
+          <span class="counter" data-target="120" data-duration="1800">0</span><span class="text-cyanx">+</span>
+        </p>
+        <p class="mt-1.5 text-sm font-medium text-slate-500">举办活动</p>
+      </div>
+
+      <!-- 数据项 3：项目数 -->
+      <div class="group flex flex-col items-center rounded-card px-2 py-4 text-center transition hover:bg-slate-50/80" data-reveal data-delay="200">
+        <span class="mb-3 grid h-12 w-12 place-items-center rounded-card bg-emerald-50 text-neon transition group-hover:bg-neon group-hover:text-white">
+          <i class="fa-solid fa-diagram-project text-xl" aria-hidden="true"></i>
+        </span>
+        <p class="tnum text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">
+          <span class="counter" data-target="30" data-duration="1800">0</span><span class="text-cyanx">+</span>
+        </p>
+        <p class="mt-1.5 text-sm font-medium text-slate-500">技术项目</p>
+      </div>
+
+      <!-- 数据项 4：获奖数 -->
+      <div class="group flex flex-col items-center rounded-card px-2 py-4 text-center transition hover:bg-slate-50/80" data-reveal data-delay="300">
+        <span class="mb-3 grid h-12 w-12 place-items-center rounded-card bg-amber-50 text-amber-500 transition group-hover:bg-amber-500 group-hover:text-white">
+          <i class="fa-solid fa-trophy text-xl" aria-hidden="true"></i>
+        </span>
+        <p class="tnum text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">
+          <span class="counter" data-target="15" data-duration="1800">0</span><span class="text-cyanx">+</span>
+        </p>
+        <p class="mt-1.5 text-sm font-medium text-slate-500">获奖次数</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     模块 4：协会简介 About
+     - 左：占位图片 / 右：标题 + 简介 + 了解更多按钮
+     ============================================================ -->
+<section id="about" class="relative overflow-hidden bg-white px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+  <!-- 装饰背景 -->
+  <div class="pointer-events-none absolute -left-32 top-10 h-72 w-72 rounded-full bg-brand-100/60 blur-3xl"></div>
+  <div class="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-cyan-100/50 blur-3xl"></div>
+
+  <div class="relative mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
+
+    <!-- 4.1 图片区（占位图 + 数据角标） -->
+    <div class="relative" data-reveal>
+      <div class="overflow-hidden rounded-2xl shadow-[0_24px_60px_-24px_rgba(30,58,138,.45)]">
+        <img src="https://picsum.photos/seed/techclub-about/900/680" alt="协会活动合影（占位图）"
+             class="h-[300px] w-full object-cover transition-transform duration-700 hover:scale-105 sm:h-[420px]" loading="lazy" data-img />
+      </div>
+
+      <!-- 左下角小卡片 -->
+      <div class="absolute -bottom-6 left-4 hidden items-center gap-3 rounded-card border border-slate-100 bg-white/95 px-5 py-4 shadow-lg backdrop-blur sm:flex">
+        <span class="grid h-11 w-11 place-items-center rounded-card bg-gradient-to-br from-brand-600 to-cyanx text-white">
+          <i class="fa-solid fa-graduation-cap" aria-hidden="true"></i>
+        </span>
+        <div>
+          <p class="text-sm font-bold text-brand-deep">成立于 2012 年</p>
+          <p class="text-xs text-slate-400">13 年技术传承</p>
+        </div>
+      </div>
+
+      <!-- 右上角荣誉角标 -->
+      <div class="absolute -right-3 -top-3 hidden rounded-card bg-neon px-4 py-2 text-xs font-bold text-slate-900 shadow-lg sm:block">
+        <i class="fa-solid fa-star mr-1" aria-hidden="true"></i>校级十佳社团
+      </div>
+    </div>
+
+    <!-- 4.2 文字区 -->
+    <div data-reveal data-delay="120">
+      <span class="inline-flex items-center gap-2 rounded-full bg-brand-100 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-brand-600">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>About Us
+      </span>
+      <h2 class="mt-5 text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">关于我们</h2>
+      <div class="mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-brand-600 to-cyanx"></div>
+
+      <p class="mt-6 text-[15px] leading-8 text-slate-600">
+        XX大学计算机协会成立于 2012 年，是由校团委指导、面向全校学生的科技类社团，现有会员 500 余人。
+        协会以「技术驱动未来，代码改变世界」为宗旨，致力于降低编程入门门槛、搭建技术交流平台。
+        主要活动方向包括：算法竞赛集训与组队参赛、开源项目协作开发、前后端与人工智能技术分享会、
+        以及面向新生的编程启蒙 workshops，帮助每一位同学把兴趣变成可以拿得出手的真本事。
+      </p>
+
+      <!-- 三个关键词 -->
+      <ul class="mt-7 grid grid-cols-3 gap-3 text-center">
+        <li class="rounded-btn bg-slate-50 py-3">
+          <i class="fa-solid fa-code mb-1 block text-brand-600" aria-hidden="true"></i>
+          <span class="text-xs font-semibold text-slate-600">技术实践</span>
+        </li>
+        <li class="rounded-btn bg-slate-50 py-3">
+          <i class="fa-solid fa-people-group mb-1 block text-cyanx" aria-hidden="true"></i>
+          <span class="text-xs font-semibold text-slate-600">开放协作</span>
+        </li>
+        <li class="rounded-btn bg-slate-50 py-3">
+          <i class="fa-solid fa-lightbulb mb-1 block text-neon" aria-hidden="true"></i>
+          <span class="text-xs font-semibold text-slate-600">持续成长</span>
+        </li>
+      </ul>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <!-- 占位链接：后续可指向「协会介绍」详情页 -->
+        <a href="#about" class="btn inline-flex items-center gap-2 rounded-btn bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:bg-brand-deep hover:shadow-lg">
+          了解更多<i class="fa-solid fa-arrow-right-long text-xs" aria-hidden="true"></i>
+        </a>
+        <a href="#join" class="btn inline-flex items-center gap-2 rounded-btn border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 hover:border-brand-600 hover:text-brand-600">
+          <i class="fa-regular fa-paper-plane" aria-hidden="true"></i>申请加入
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     模块 5：最新动态 News
+     - 标题栏 + 4 条新闻卡片（PC 4 列 / 平板 2 列 / 手机单列）
+     - 卡片悬浮上浮 + 阴影加深
+     ============================================================ -->
+<section id="news" class="bg-slate-50 px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+
+    <!-- 5.1 标题栏 -->
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4" data-reveal>
+      <div>
+        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-cyanx">
+          <i class="fa-solid fa-bolt" aria-hidden="true"></i>News
+        </span>
+        <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">最新动态</h2>
+        <p class="mt-2 text-sm text-slate-500">协会资讯、技术分享与赛事战报，第一时间同步</p>
+      </div>
+      <a href="#news" class="group inline-flex items-center gap-2 rounded-btn px-4 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-100/70">
+        查看更多<i class="fa-solid fa-chevron-right text-xs transition-transform group-hover:translate-x-1" aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <!-- 5.2 新闻卡片网格 -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+
+      <!-- 新闻 1 -->
+      <article class="lift group flex flex-col overflow-hidden rounded-card bg-white shadow-card" data-reveal data-delay="0">
+        <a href="#news" class="relative block overflow-hidden">
+          <img src="https://picsum.photos/seed/news1/720/460" alt="新闻封面（占位图）"
+               class="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" data-img />
+          <span class="absolute left-3 top-3 rounded-full bg-brand-600/95 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">协会公告</span>
+        </a>
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-base font-bold leading-snug text-slate-800 transition-colors group-hover:text-brand-600">
+            <a href="#news">2025 年秋季招新正式启动，四大方向等你来</a>
+          </h3>
+          <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-500 line-clamp-3">
+            本次招新覆盖前端、后端、算法与人工智能四个方向，即日起开放线上报名通道，欢迎各年级同学踊跃参与。
+          </p>
+          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+            <span><i class="fa-regular fa-clock mr-1" aria-hidden="true"></i>2025-09-01</span>
+            <span class="font-semibold text-brand-600 opacity-0 transition-opacity group-hover:opacity-100">阅读全文 <i class="fa-solid fa-arrow-right text-[10px]" aria-hidden="true"></i></span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 新闻 2 -->
+      <article class="lift group flex flex-col overflow-hidden rounded-card bg-white shadow-card" data-reveal data-delay="100">
+        <a href="#news" class="relative block overflow-hidden">
+          <img src="https://picsum.photos/seed/news2/720/460" alt="新闻封面（占位图）"
+               class="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" data-img />
+          <span class="absolute left-3 top-3 rounded-full bg-cyanx/95 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">技术分享</span>
+        </a>
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-base font-bold leading-snug text-slate-800 transition-colors group-hover:text-brand-600">
+            <a href="#news">大模型应用开发分享会回顾：从 RAG 到 Agent</a>
+          </h3>
+          <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-500 line-clamp-3">
+            本次分享会由学长主讲，系统梳理了检索增强生成与智能体的工程落地思路，现场演示了完整 Demo。
+          </p>
+          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+            <span><i class="fa-regular fa-clock mr-1" aria-hidden="true"></i>2025-08-24</span>
+            <span class="font-semibold text-brand-600 opacity-0 transition-opacity group-hover:opacity-100">阅读全文 <i class="fa-solid fa-arrow-right text-[10px]" aria-hidden="true"></i></span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 新闻 3 -->
+      <article class="lift group flex flex-col overflow-hidden rounded-card bg-white shadow-card" data-reveal data-delay="200">
+        <a href="#news" class="relative block overflow-hidden">
+          <img src="https://picsum.photos/seed/news3/720/460" alt="新闻封面（占位图）"
+               class="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" data-img />
+          <span class="absolute left-3 top-3 rounded-full bg-neon/95 px-3 py-1 text-[11px] font-bold text-slate-900 backdrop-blur">赛事战报</span>
+        </a>
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-base font-bold leading-snug text-slate-800 transition-colors group-hover:text-brand-600">
+            <a href="#news">省赛告捷！协会代表队斩获 3 金 2 银</a>
+          </h3>
+          <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-500 line-clamp-3">
+            在刚刚结束的省级程序设计竞赛中，协会派出的 5 支队伍全部获奖，其中 3 支队伍获得金奖并晋级国赛。
+          </p>
+          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+            <span><i class="fa-regular fa-clock mr-1" aria-hidden="true"></i>2025-08-10</span>
+            <span class="font-semibold text-brand-600 opacity-0 transition-opacity group-hover:opacity-100">阅读全文 <i class="fa-solid fa-arrow-right text-[10px]" aria-hidden="true"></i></span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 新闻 4 -->
+      <article class="lift group flex flex-col overflow-hidden rounded-card bg-white shadow-card" data-reveal data-delay="300">
+        <a href="#news" class="relative block overflow-hidden">
+          <img src="https://picsum.photos/seed/news4/720/460" alt="新闻封面（占位图）"
+               class="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" data-img />
+          <span class="absolute left-3 top-3 rounded-full bg-amber-500/95 px-3 py-1 text-[11px] font-bold text-white backdrop-blur">开源项目</span>
+        </a>
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-base font-bold leading-snug text-slate-800 transition-colors group-hover:text-brand-600">
+            <a href="#news">校园二手交易平台 v2.0 开源发布</a>
+          </h3>
+          <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-500 line-clamp-3">
+            由协会项目组历时三个月迭代完成，新增即时通讯与信用评价模块，代码已托管至开源仓库，欢迎共建。
+          </p>
+          <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400">
+            <span><i class="fa-regular fa-clock mr-1" aria-hidden="true"></i>2025-07-28</span>
+            <span class="font-semibold text-brand-600 opacity-0 transition-opacity group-hover:opacity-100">阅读全文 <i class="fa-solid fa-arrow-right text-[10px]" aria-hidden="true"></i></span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     模块 6：活动预告 Events
+     - 3 个活动卡片：海报 / 名称 / 时间 / 地点 / 报名按钮
+     - 动态倒计时「距开始还有 X 天」；点击报名弹出报名表单弹窗
+     ============================================================ -->
+<section id="events" class="bg-white px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+
+    <!-- 6.1 标题栏 -->
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4" data-reveal>
+      <div>
+        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-cyanx">
+          <i class="fa-regular fa-calendar-days" aria-hidden="true"></i>Events
+        </span>
+        <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">活动预告</h2>
+        <p class="mt-2 text-sm text-slate-500">技术分享、集训营与线下沙龙，名额有限先到先得</p>
+      </div>
+      <a href="#events" class="group inline-flex items-center gap-2 rounded-btn px-4 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-100/70">
+        查看更多<i class="fa-solid fa-chevron-right text-xs transition-transform group-hover:translate-x-1" aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <!-- 6.2 活动卡片网格 -->
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+
+      <!-- 活动 1 -->
+      <article class="lift group flex flex-col overflow-hidden rounded-card border border-slate-100 bg-white shadow-card" data-reveal data-delay="0">
+        <div class="relative overflow-hidden">
+          <img src="https://picsum.photos/seed/event1/800/500" alt="活动海报（占位图）"
+               class="h-52 w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" data-img />
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent p-4">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-brand-600">
+              <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+              距开始还有 <span class="event-countdown tnum text-rose-600" data-start-in-days="8">--</span> 天
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-lg font-bold leading-snug text-slate-800 transition-colors group-hover:text-brand-600">算法竞赛集训营（第 12 期）</h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-500">
+            <li class="flex items-center gap-2"><i class="fa-regular fa-clock w-4 text-cyanx" aria-hidden="true"></i><span data-event-date data-start-in-days="8">待定</span></li>
+            <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot w-4 text-cyanx" aria-hidden="true"></i>计算机学院 A301 机房</li>
+            <li class="flex items-center gap-2"><i class="fa-solid fa-user-group w-4 text-cyanx" aria-hidden="true"></i>限 60 人 · 已报名 42 人</li>
+          </ul>
+          <div class="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
+            <button type="button" data-open-modal="signup" data-event-name="算法竞赛集训营（第 12 期）"
+                    class="btn flex-1 rounded-btn bg-brand-600 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-brand-deep hover:shadow-md">
+              <i class="fa-solid fa-pen-to-square mr-1.5" aria-hidden="true"></i>立即报名
+            </button>
+            <a href="#events" class="grid h-10 w-10 shrink-0 place-items-center rounded-btn border border-slate-200 text-slate-400 transition hover:border-brand-600 hover:text-brand-600" aria-label="活动详情">
+              <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 活动 2 -->
+      <article class="lift group flex flex-col overflow-hidden rounded-card border border-slate-100 bg-white shadow-card" data-reveal data-delay="120">
+        <div class="relative overflow-hidden">
+          <img src="https://picsum.photos/seed/event2/800/500" alt="活动海报（占位图）"
+               class="h-52 w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" data-img />
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent p-4">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-brand-600">
+              <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+              距开始还有 <span class="event-countdown tnum text-rose-600" data-start-in-days="21">--</span> 天
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-lg font-bold leading-snug text-slate-800 transition-colors group-hover:text-brand-600">开源项目开放日：一起写个全栈应用</h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-500">
+            <li class="flex items-center gap-2"><i class="fa-regular fa-clock w-4 text-cyanx" aria-hidden="true"></i><span data-event-date data-start-in-days="21">待定</span></li>
+            <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot w-4 text-cyanx" aria-hidden="true"></i>图书馆 5 楼创客空间</li>
+            <li class="flex items-center gap-2"><i class="fa-solid fa-user-group w-4 text-cyanx" aria-hidden="true"></i>限 40 人 · 已报名 27 人</li>
+          </ul>
+          <div class="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
+            <button type="button" data-open-modal="signup" data-event-name="开源项目开放日：一起写个全栈应用"
+                    class="btn flex-1 rounded-btn bg-brand-600 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-brand-deep hover:shadow-md">
+              <i class="fa-solid fa-pen-to-square mr-1.5" aria-hidden="true"></i>立即报名
+            </button>
+            <a href="#events" class="grid h-10 w-10 shrink-0 place-items-center rounded-btn border border-slate-200 text-slate-400 transition hover:border-brand-600 hover:text-brand-600" aria-label="活动详情">
+              <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 活动 3 -->
+      <article class="lift group flex flex-col overflow-hidden rounded-card border border-slate-100 bg-white shadow-card md:col-span-2 lg:col-span-1" data-reveal data-delay="240">
+        <div class="relative overflow-hidden">
+          <img src="https://picsum.photos/seed/event3/800/500" alt="活动海报（占位图）"
+               class="h-52 w-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" data-img />
+          <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent p-4">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-brand-600">
+              <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+              距开始还有 <span class="event-countdown tnum text-rose-600" data-start-in-days="45">--</span> 天
+            </span>
+          </div>
+        </div>
+
+        <div class="flex flex-1 flex-col p-5">
+          <h3 class="text-lg font-bold leading-snug text-slate-800 transition-colors group-hover:text-brand-600">AI 应用创新挑战赛校内选拔</h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-500">
+            <li class="flex items-center gap-2"><i class="fa-regular fa-clock w-4 text-cyanx" aria-hidden="true"></i><span data-event-date data-start-in-days="45">待定</span></li>
+            <li class="flex items-center gap-2"><i class="fa-solid fa-location-dot w-4 text-cyanx" aria-hidden="true"></i>大学生活动中心报告厅</li>
+            <li class="flex items-center gap-2"><i class="fa-solid fa-user-group w-4 text-cyanx" aria-hidden="true"></i>团队赛 · 3 人一队</li>
+          </ul>
+          <div class="mt-5 flex items-center gap-3 border-t border-slate-100 pt-4">
+            <button type="button" data-open-modal="signup" data-event-name="AI 应用创新挑战赛校内选拔"
+                    class="btn flex-1 rounded-btn bg-brand-600 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-brand-deep hover:shadow-md">
+              <i class="fa-solid fa-pen-to-square mr-1.5" aria-hidden="true"></i>立即报名
+            </button>
+            <a href="#events" class="grid h-10 w-10 shrink-0 place-items-center rounded-btn border border-slate-200 text-slate-400 transition hover:border-brand-600 hover:text-brand-600" aria-label="活动详情">
+              <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     模块 7：技术资源 Resources
+     - 图标 + 名称 + 描述的分类入口
+     - PC 端 3 列 × 2 行；移动端 2 列
+     ============================================================ -->
+<section id="resources" class="bg-slate-50 px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+
+    <!-- 7.1 标题栏 -->
+    <div class="mb-10 flex flex-wrap items-end justify-between gap-4" data-reveal>
+      <div>
+        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-cyanx">
+          <i class="fa-solid fa-layer-group" aria-hidden="true"></i>Resources
+        </span>
+        <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">技术资源</h2>
+        <p class="mt-2 text-sm text-slate-500">从入门到进阶，把协会沉淀的学习资料免费开放给全校同学</p>
+      </div>
+      <a href="#resources" class="group inline-flex items-center gap-2 rounded-btn px-4 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-100/70">
+        查看更多<i class="fa-solid fa-chevron-right text-xs transition-transform group-hover:translate-x-1" aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <!-- 7.2 资源分类网格：手机 2 列 / 平板 2 列 / PC 3 列 -->
+    <div class="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+
+      <!-- 学习路线 -->
+      <a href="#resources" class="lift group flex flex-col gap-3 rounded-card border border-slate-100 bg-white p-5 shadow-card sm:flex-row sm:items-start sm:gap-4 sm:p-6" data-reveal data-delay="0">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-card bg-gradient-to-br from-brand-deep to-brand-600 text-white shadow-sm transition group-hover:scale-110">
+          <i class="fa-solid fa-route text-lg" aria-hidden="true"></i>
+        </span>
+        <span class="block">
+          <span class="flex items-center gap-1 text-base font-bold text-slate-800 transition-colors group-hover:text-brand-600">
+            学习路线<i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true"></i>
+          </span>
+          <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 sm:text-sm">前端 / 后端 / 算法 / AI 四大方向分阶段学习地图。</span>
+        </span>
+      </a>
+
+      <!-- 教程文章 -->
+      <a href="#resources" class="lift group flex flex-col gap-3 rounded-card border border-slate-100 bg-white p-5 shadow-card sm:flex-row sm:items-start sm:gap-4 sm:p-6" data-reveal data-delay="100">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-card bg-gradient-to-br from-cyanx to-brand-600 text-white shadow-sm transition group-hover:scale-110">
+          <i class="fa-solid fa-book-open-reader text-lg" aria-hidden="true"></i>
+        </span>
+        <span class="block">
+          <span class="flex items-center gap-1 text-base font-bold text-slate-800 transition-colors group-hover:text-brand-600">
+            教程文章<i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true"></i>
+          </span>
+          <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 sm:text-sm">由学长学姐撰写的高质量原创技术文章与笔记。</span>
+        </span>
+      </a>
+
+      <!-- 资源下载 -->
+      <a href="#resources" class="lift group flex flex-col gap-3 rounded-card border border-slate-100 bg-white p-5 shadow-card sm:flex-row sm:items-start sm:gap-4 sm:p-6" data-reveal data-delay="200">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-card bg-gradient-to-br from-neon to-cyanx text-white shadow-sm transition group-hover:scale-110">
+          <i class="fa-solid fa-cloud-arrow-down text-lg" aria-hidden="true"></i>
+        </span>
+        <span class="block">
+          <span class="flex items-center gap-1 text-base font-bold text-slate-800 transition-colors group-hover:text-brand-600">
+            资源下载<i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true"></i>
+          </span>
+          <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 sm:text-sm">历年真题、课件 PPT、电子书与开发工具合集。</span>
+        </span>
+      </a>
+
+      <!-- 开源项目 -->
+      <a href="#resources" class="lift group flex flex-col gap-3 rounded-card border border-slate-100 bg-white p-5 shadow-card sm:flex-row sm:items-start sm:gap-4 sm:p-6" data-reveal data-delay="0">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-card bg-gradient-to-br from-slate-800 to-brand-deep text-white shadow-sm transition group-hover:scale-110">
+          <i class="fa-solid fa-code-branch text-lg" aria-hidden="true"></i>
+        </span>
+        <span class="block">
+          <span class="flex items-center gap-1 text-base font-bold text-slate-800 transition-colors group-hover:text-brand-600">
+            开源项目<i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true"></i>
+          </span>
+          <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 sm:text-sm">协会在研的开源仓库，欢迎提 Issue 与 PR 共建。</span>
+        </span>
+      </a>
+
+      <!-- 技术博客 -->
+      <a href="#resources" class="lift group flex flex-col gap-3 rounded-card border border-slate-100 bg-white p-5 shadow-card sm:flex-row sm:items-start sm:gap-4 sm:p-6" data-reveal data-delay="100">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-card bg-gradient-to-br from-brand-600 to-cyanx text-white shadow-sm transition group-hover:scale-110">
+          <i class="fa-solid fa-pen-nib text-lg" aria-hidden="true"></i>
+        </span>
+        <span class="block">
+          <span class="flex items-center gap-1 text-base font-bold text-slate-800 transition-colors group-hover:text-brand-600">
+            技术博客<i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true"></i>
+          </span>
+          <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 sm:text-sm">会员技术专栏，记录踩坑经验与源码阅读心得。</span>
+        </span>
+      </a>
+
+      <!-- 常见问题 -->
+      <a href="#resources" class="lift group flex flex-col gap-3 rounded-card border border-slate-100 bg-white p-5 shadow-card sm:flex-row sm:items-start sm:gap-4 sm:p-6" data-reveal data-delay="200">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-card bg-gradient-to-br from-amber-400 to-neon text-white shadow-sm transition group-hover:scale-110">
+          <i class="fa-regular fa-circle-question text-lg" aria-hidden="true"></i>
+        </span>
+        <span class="block">
+          <span class="flex items-center gap-1 text-base font-bold text-slate-800 transition-colors group-hover:text-brand-600">
+            常见问题<i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true"></i>
+          </span>
+          <span class="mt-1.5 block text-xs leading-relaxed text-slate-500 sm:text-sm">环境配置、入会流程与竞赛报名的高频疑问解答。</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     模块 8：快速入口 Quick Entry
+     - 4 个渐变入口卡片，悬浮放大 / 变色
+     ============================================================ -->
+<section id="join" class="bg-white px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+
+    <!-- 8.1 标题 -->
+    <div class="mb-10 text-center" data-reveal>
+      <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-cyanx">
+        <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>Quick Entry
+      </span>
+      <h2 class="mt-2 text-3xl font-extrabold tracking-tight text-brand-deep sm:text-4xl">快速入口</h2>
+      <p class="mx-auto mt-3 max-w-xl text-sm text-slate-500">常用服务一键直达，省去寻找的时间</p>
+    </div>
+
+    <!-- 8.2 入口卡片：手机单列 / 平板 2 列 / PC 4 列 -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
+      <!-- 入口 1：加入我们 -->
+      <a href="#" data-open-modal="signup" data-event-name="协会招新报名"
+         class="group relative overflow-hidden rounded-card bg-gradient-to-br from-brand-deep to-brand-600 p-6 text-white shadow-card transition duration-500 hover:-translate-y-2 hover:rotate-[.6deg] hover:shadow-[0_24px_50px_-16px_rgba(30,58,138,.6)]" data-reveal data-delay="0">
+        <span class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 transition-transform duration-700 group-hover:scale-[2.2]"></span>
+        <span class="relative grid h-12 w-12 place-items-center rounded-card bg-white/15 backdrop-blur">
+          <i class="fa-solid fa-user-plus text-xl" aria-hidden="true"></i>
+        </span>
+        <h3 class="relative mt-5 text-lg font-bold">加入我们</h3>
+        <p class="relative mt-1.5 text-sm text-blue-100/85">招新报名通道已开启，四方向任选</p>
+        <span class="relative mt-4 inline-flex items-center gap-2 text-sm font-bold text-cyan-200">
+          立即报名<i class="fa-solid fa-arrow-right-long text-xs transition-transform group-hover:translate-x-1.5" aria-hidden="true"></i>
+        </span>
+      </a>
+
+      <!-- 入口 2：活动报名 -->
+      <a href="#events"
+         class="group relative overflow-hidden rounded-card bg-gradient-to-br from-cyanx to-brand-600 p-6 text-white shadow-card transition duration-500 hover:-translate-y-2 hover:rotate-[-.6deg] hover:shadow-[0_24px_50px_-16px_rgba(6,182,212,.6)]" data-reveal data-delay="100">
+        <span class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 transition-transform duration-700 group-hover:scale-[2.2]"></span>
+        <span class="relative grid h-12 w-12 place-items-center rounded-card bg-white/15 backdrop-blur">
+          <i class="fa-regular fa-calendar-check text-xl" aria-hidden="true"></i>
+        </span>
+        <h3 class="relative mt-5 text-lg font-bold">活动报名</h3>
+        <p class="relative mt-1.5 text-sm text-cyan-50/90">查看近期活动并一键占位</p>
+        <span class="relative mt-4 inline-flex items-center gap-2 text-sm font-bold text-slate-900">
+          去看看<i class="fa-solid fa-arrow-right-long text-xs transition-transform group-hover:translate-x-1.5" aria-hidden="true"></i>
+        </span>
+      </a>
+
+      <!-- 入口 3：资源下载 -->
+      <a href="#resources"
+         class="group relative overflow-hidden rounded-card bg-gradient-to-br from-neon to-cyanx p-6 text-slate-900 shadow-card transition duration-500 hover:-translate-y-2 hover:rotate-[.6deg] hover:shadow-[0_24px_50px_-16px_rgba(34,197,94,.55)]" data-reveal data-delay="200">
+        <span class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/20 transition-transform duration-700 group-hover:scale-[2.2]"></span>
+        <span class="relative grid h-12 w-12 place-items-center rounded-card bg-white/25 backdrop-blur">
+          <i class="fa-solid fa-cloud-arrow-down text-xl" aria-hidden="true"></i>
+        </span>
+        <h3 class="relative mt-5 text-lg font-bold">资源下载</h3>
+        <p class="relative mt-1.5 text-sm text-slate-800/80">真题、课件与工具包免费下载</p>
+        <span class="relative mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-deep">
+          去下载<i class="fa-solid fa-arrow-right-long text-xs transition-transform group-hover:translate-x-1.5" aria-hidden="true"></i>
+        </span>
+      </a>
+
+      <!-- 入口 4：联系我们 -->
+      <a href="#footer"
+         class="group relative overflow-hidden rounded-card bg-gradient-to-br from-slate-800 to-brand-deep p-6 text-white shadow-card transition duration-500 hover:-translate-y-2 hover:rotate-[-.6deg] hover:shadow-[0_24px_50px_-16px_rgba(15,23,42,.6)]" data-reveal data-delay="300">
+        <span class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 transition-transform duration-700 group-hover:scale-[2.2]"></span>
+        <span class="relative grid h-12 w-12 place-items-center rounded-card bg-white/15 backdrop-blur">
+          <i class="fa-regular fa-comments text-xl" aria-hidden="true"></i>
+        </span>
+        <h3 class="relative mt-5 text-lg font-bold">联系我们</h3>
+        <p class="relative mt-1.5 text-sm text-blue-100/85">加入 QQ 群，和 500+ 同学聊技术</p>
+        <span class="relative mt-4 inline-flex items-center gap-2 text-sm font-bold text-cyan-200">
+          联系方式<i class="fa-solid fa-arrow-right-long text-xs transition-transform group-hover:translate-x-1.5" aria-hidden="true"></i>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============================================================
+     模块 9：底部 Footer
+     - 4 列：协会信息 / 快速链接 / 联系方式 / 友情链接
+     - 深色背景 + 浅色文字，分隔线下方为版权栏
+     ============================================================ -->
+<footer id="footer" class="bg-brand-ink text-slate-300">
+  <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+
+      <!-- 9.1 第一列：Logo + 简介 + 社交 -->
+      <div data-reveal>
+        <div class="flex items-center gap-2.5">
+          <span class="grid h-11 w-11 place-items-center rounded-card bg-gradient-to-br from-brand-600 to-cyanx text-white">
+            <i class="fa-solid fa-code text-lg" aria-hidden="true"></i>
+          </span>
+          <span class="text-lg font-extrabold text-white">XX大学计算机协会</span>
+        </div>
+        <p class="mt-5 text-sm leading-relaxed text-slate-400">
+          技术驱动未来，代码改变世界。我们为全校同学提供技术学习、项目实践与竞赛交流的平台。
+        </p>
+        <div class="mt-6 flex items-center gap-3">
+          <a href="#" aria-label="微信公众号" class="group grid h-10 w-10 place-items-center rounded-full bg-white/5 transition hover:bg-neon hover:text-slate-900">
+            <i class="fa-brands fa-weixin" aria-hidden="true"></i>
+          </a>
+          <a href="#" aria-label="QQ" class="group grid h-10 w-10 place-items-center rounded-full bg-white/5 transition hover:bg-cyanx hover:text-slate-900">
+            <i class="fa-brands fa-qq" aria-hidden="true"></i>
+          </a>
+          <a href="#" aria-label="GitHub" class="group grid h-10 w-10 place-items-center rounded-full bg-white/5 transition hover:bg-white hover:text-slate-900">
+            <i class="fa-brands fa-github" aria-hidden="true"></i>
+          </a>
+          <a href="#" aria-label="B 站" class="group grid h-10 w-10 place-items-center rounded-full bg-white/5 transition hover:bg-brand-600 hover:text-white">
+            <i class="fa-brands fa-bilibili" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- 9.2 第二列：快速链接 -->
+      <div data-reveal data-delay="100">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-white">快速链接</h3>
+        <div class="mt-2 h-0.5 w-8 rounded-full bg-cyanx"></div>
+        <ul class="mt-5 space-y-3 text-sm">
+          <li><a href="#hero"      class="inline-flex items-center gap-2 transition hover:translate-x-1 hover:text-cyanx"><i class="fa-solid fa-angle-right text-[10px] text-cyanx" aria-hidden="true"></i>首页</a></li>
+          <li><a href="#about"     class="inline-flex items-center gap-2 transition hover:translate-x-1 hover:text-cyanx"><i class="fa-solid fa-angle-right text-[10px] text-cyanx" aria-hidden="true"></i>协会介绍</a></li>
+          <li><a href="#news"      class="inline-flex items-center gap-2 transition hover:translate-x-1 hover:text-cyanx"><i class="fa-solid fa-angle-right text-[10px] text-cyanx" aria-hidden="true"></i>新闻公告</a></li>
+          <li><a href="#events"    class="inline-flex items-center gap-2 transition hover:translate-x-1 hover:text-cyanx"><i class="fa-solid fa-angle-right text-[10px] text-cyanx" aria-hidden="true"></i>活动与赛事</a></li>
+          <li><a href="#resources" class="inline-flex items-center gap-2 transition hover:translate-x-1 hover:text-cyanx"><i class="fa-solid fa-angle-right text-[10px] text-cyanx" aria-hidden="true"></i>技术资源</a></li>
+          <li><a href="#join"      class="inline-flex items-center gap-2 transition hover:translate-x-1 hover:text-cyanx"><i class="fa-solid fa-angle-right text-[10px] text-cyanx" aria-hidden="true"></i>加入我们</a></li>
+        </ul>
+      </div>
+
+      <!-- 9.3 第三列：联系方式 -->
+      <div data-reveal data-delay="200">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-white">联系方式</h3>
+        <div class="mt-2 h-0.5 w-8 rounded-full bg-cyanx"></div>
+        <ul class="mt-5 space-y-4 text-sm">
+          <li class="flex items-start gap-3">
+            <i class="fa-regular fa-envelope mt-0.5 w-4 text-cyanx" aria-hidden="true"></i>
+            <span>邮箱：<a href="mailto:computer@xx.edu.cn" class="transition hover:text-cyanx">computer@xx.edu.cn</a></span>
+          </li>
+          <li class="flex items-start gap-3">
+            <i class="fa-brands fa-qq mt-0.5 w-4 text-cyanx" aria-hidden="true"></i>
+            <span>QQ 群：<span class="tnum">123456789</span>（2025 招新群）</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <i class="fa-solid fa-location-dot mt-0.5 w-4 text-cyanx" aria-hidden="true"></i>
+            <span>地址：XX 大学计算机学院 A 座 301 室</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <i class="fa-regular fa-clock mt-0.5 w-4 text-cyanx" aria-hidden="true"></i>
+            <span>值班时间：周一至周五 18:30 - 21:00</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 9.4 第四列：友情链接 -->
+      <div data-reveal data-delay="300">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-white">友情链接</h3>
+        <div class="mt-2 h-0.5 w-8 rounded-full bg-cyanx"></div>
+        <ul class="mt-5 space-y-3 text-sm">
+          <li><a href="#" class="transition hover:text-cyanx">XX 大学官网</a></li>
+          <li><a href="#" class="transition hover:text-cyanx">计算机学院</a></li>
+          <li><a href="#" class="transition hover:text-cyanx">校团委</a></li>
+          <li><a href="#" class="transition hover:text-cyanx">图书馆资源中心</a></li>
+          <li><a href="#" class="transition hover:text-cyanx">开源社区</a></li>
+        </ul>
+
+        <!-- 二维码占位 -->
+        <div class="mt-6 flex items-center gap-3 rounded-card bg-white/5 p-3">
+          <img src="https://picsum.photos/seed/qrcode/160/160" alt="协会公众号二维码（占位图）"
+               class="h-14 w-14 rounded-btn object-cover" loading="lazy" data-img />
+          <p class="text-xs leading-relaxed text-slate-400">扫码关注公众号<br />获取最新活动通知</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9.5 版权栏 -->
+  <div class="border-t border-white/10">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-slate-400 sm:flex-row sm:px-6 lg:px-8">
+      <p>© 2025 XX大学计算机协会 版权所有 | 备案号：京ICP备00000000号-1</p>
+      <div class="flex items-center gap-5">
+        <a href="#" class="transition hover:text-cyanx">隐私政策</a>
+        <a href="#" class="transition hover:text-cyanx">使用条款</a>
+        <a href="#hero" class="inline-flex items-center gap-1.5 transition hover:text-cyanx">
+          回到顶部<i class="fa-solid fa-arrow-up text-[10px]" aria-hidden="true"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     附录：通用弹窗（登录/注册 + 活动报名表单）
+     - 原生 JS 控制显示：data-open-modal="login" / "signup"
+     ============================================================ -->
+<div id="modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <!-- 遮罩 -->
+  <div id="modalOverlay" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"></div>
+
+  <div id="modalPanel" class="relative w-full max-w-md scale-95 rounded-2xl bg-white p-6 opacity-0 shadow-2xl transition-all duration-300 sm:p-8">
+    <button id="modalClose" type="button" aria-label="关闭弹窗"
+            class="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700">
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+
+    <!-- 弹窗标题 -->
+    <h3 id="modalTitle" class="text-xl font-extrabold text-brand-deep">报名信息</h3>
+    <p id="modalSubtitle" class="mt-1.5 text-sm text-slate-500">请填写以下信息完成报名，我们会在 24 小时内与你联系。</p>
+
+    <!-- 报名 / 登录表单（占位：后续可接入后端接口） -->
+    <form id="modalForm" class="mt-6 space-y-4" novalidate>
+      <div>
+        <label for="fName" class="mb-1.5 block text-xs font-semibold text-slate-600">姓名 <span class="text-rose-500">*</span></label>
+        <input id="fName" name="name" type="text" required placeholder="请输入真实姓名"
+               class="w-full rounded-btn border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-cyanx/30" />
+      </div>
+      <div>
+        <label for="fSid" class="mb-1.5 block text-xs font-semibold text-slate-600">学号 <span class="text-rose-500">*</span></label>
+        <input id="fSid" name="sid" type="text" required placeholder="例如：2025010101"
+               class="w-full rounded-btn border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-cyanx/30" />
+      </div>
+      <div>
+        <label for="fPhone" class="mb-1.5 block text-xs font-semibold text-slate-600">手机号 <span class="text-rose-500">*</span></label>
+        <input id="fPhone" name="phone" type="tel" required placeholder="11 位手机号"
+               class="w-full rounded-btn border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-cyanx/30" />
+      </div>
+      <div>
+        <label for="fDir" class="mb-1.5 block text-xs font-semibold text-slate-600">意向方向</label>
+        <select id="fDir" name="direction"
+                class="w-full rounded-btn border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-cyanx/30">
+          <option>前端开发</option>
+          <option>后端开发</option>
+          <option>算法竞赛</option>
+          <option>人工智能</option>
+        </select>
+      </div>
+      <p id="formError" class="hidden text-xs font-semibold text-rose-500"></p>
+      <button type="submit" class="btn w-full rounded-btn bg-gradient-to-r from-brand-600 to-cyanx py-3 text-sm font-bold text-white shadow-md hover:shadow-lg">
+        提交报名
+      </button>
+      <p class="text-center text-[11px] text-slate-400">提交即表示同意协会《用户信息使用说明》（占位文案）</p>
+    </form>
+
+    <!-- 提交成功提示 -->
+    <div id="formSuccess" class="mt-6 hidden flex-col items-center py-6 text-center">
+      <span class="grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-neon">
+        <i class="fa-solid fa-check text-2xl" aria-hidden="true"></i>
+      </span>
+      <p id="successTitle" class="mt-4 text-lg font-bold text-brand-deep">提交成功！</p>
+      <p id="successDesc" class="mt-1.5 text-sm text-slate-500">我们已收到你的报名信息，请留意 QQ 群与短信通知。</p>
+      <button type="button" id="successClose" class="btn mt-6 rounded-btn bg-brand-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-deep">知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     原生 JavaScript：所有交互逻辑
+     1) 图片加载失败兜底        6) 数字滚动增长
+     2) 导航栏滚动状态 + 高亮    7) 活动倒计时
+     3) 移动端汉堡菜单          8) 卡片 / 模块滚动淡入
+     4) Hero 轮播               9) 弹窗（登录 / 报名表单）
+     5) 搜索框展开             10) 头像下拉菜单 / 用户状态切换
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  const $  = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+  /* ------------------------------------------------------------
+     1) 占位图加载失败兜底：生成内联 SVG 渐变图，避免出现破图
+     ------------------------------------------------------------ */
+  const FALLBACK_IMG = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="#1E3A8A"/><stop offset="0.55" stop-color="#2563EB"/>' +
+    '<stop offset="1" stop-color="#06B6D4"/></linearGradient></defs>' +
+    '<rect width="800" height="500" fill="url(#g)"/>' +
+    '<text x="400" y="255" fill="rgba(255,255,255,.92)" font-family="sans-serif" font-size="34" ' +
+    'font-weight="bold" text-anchor="middle">XX大学计算机协会</text>' +
+    '<text x="400" y="300" fill="rgba(255,255,255,.7)" font-family="sans-serif" font-size="18" ' +
+    'text-anchor="middle">Image Placeholder</text></svg>'
+  );
+  $$('img[data-img]').forEach(img => {
+    img.addEventListener('error', () => {
+      if (img.dataset.fallbackApplied) return;
+      img.dataset.fallbackApplied = '1';
+      img.src = FALLBACK_IMG;
+    });
+  });
+
+  /* ------------------------------------------------------------
+     2) 导航栏：滚动时背景由透明转白色 + 阴影；菜单高亮
+     ------------------------------------------------------------ */
+  const navbar      = $('#navbar');
+  const brandName   = $('#brandName');
+  const brandSub    = $('#brandSub');
+  const authGuest   = $('#authGuest');
+  const authUser    = $('#authUser');
+  const avatarBtn   = $('#avatarBtn');
+  const avatarMenu  = $('#avatarMenu');
+  const hamburger   = $('#hamburger');
+  const hamburgerIc = $('#hamburgerIcon');
+  const mobileMenu  = $('#mobileMenu');
+
+  /* 导航栏主题切换：transparent = 透明（Hero 之上）；solid = 白底 */
+  function setNavTheme(solid) {
+    if (!navbar) return;
+    navbar.classList.toggle('bg-transparent', !solid);
+    navbar.classList.toggle('bg-white/95', solid);
+    navbar.classList.toggle('backdrop-blur-md', solid);
+    navbar.classList.toggle('shadow-lg', solid);
+    navbar.classList.toggle('shadow-slate-900/5', solid);
+
+    // 品牌文字 / 图标按钮 / 菜单项颜色随主题变化
+    $$('[data-theme-ink]').forEach(el => {
+      el.classList.toggle('text-white', !solid);
+      el.classList.toggle('text-brand-deep', solid);
+      el.classList.toggle('hover:text-white', !solid);
+      el.classList.toggle('hover:text-brand-600', solid);
+    });
+    if (brandSub) {
+      brandSub.classList.toggle('text-cyan-200', !solid);
+      brandSub.classList.toggle('text-slate-400', solid);
+    }
+  }
+
+  function onScroll() {
+    const solid = window.scrollY > 24;
+    setNavTheme(solid);
+    updateActiveLink();
+    updateBackToTop();
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* 2.1 当前所在页菜单项高亮（基于滚动位置） */
+  const sectionIds = ['hero', 'stats', 'about', 'news', 'events', 'resources', 'join'];
+  function updateActiveLink() {
+    const pos = window.scrollY + 140;
+    let current = 'hero';
+    sectionIds.forEach(id => {
+      const sec = document.getElementById(id);
+      if (sec && sec.offsetTop <= pos) current = id;
+    });
+    // stats 属于 Hero 下方，仍高亮「首页」
+    if (current === 'stats') current = 'hero';
+
+    /* 桌面端：渐变下划线 + 加粗（.is-active 由 CSS 控制） */
+    $$('#desktopMenu [data-navlink]').forEach(link => {
+      const match = (link.getAttribute('href') || '') === '#' + current;
+      link.classList.toggle('is-active', match);
+      link.classList.toggle('font-semibold', match);
+      link.classList.toggle('font-medium', !match);
+    });
+
+    /* 移动端菜单：整行高亮（列表项中第一个匹配项生效） */
+    let mobileHit = false;
+    $$('#mobileMenu [data-navlink]').forEach(link => {
+      const match = !mobileHit && (link.getAttribute('href') || '') === '#' + current;
+      if (match) mobileHit = true;
+      link.classList.toggle('bg-brand-100/60', match);
+      link.classList.toggle('font-semibold', match);
+      link.classList.toggle('font-medium', !match);
+    });
+  }
+
+  /* 2.2 头像下拉菜单 */
+  function closeAvatarMenu() {
+    if (!avatarMenu) return;
+    avatarMenu.classList.add('invisible', 'opacity-0', 'translate-y-[-6px]');
+    avatarBtn && avatarBtn.setAttribute('aria-expanded', 'false');
+  }
+  avatarBtn && avatarBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const open = avatarMenu.classList.contains('invisible');
+    if (open) {
+      avatarMenu.classList.remove('invisible', 'opacity-0', 'translate-y-[-6px]');
+      avatarBtn.setAttribute('aria-expanded', 'true');
+    } else {
+      closeAvatarMenu();
+    }
+  });
+  document.addEventListener('click', closeAvatarMenu);
+
+  /* 2.3 登录状态切换（演示用：登录/注册弹窗提交后显示头像） */
+  function setLoggedIn(logged) {
+    authGuest && authGuest.classList.toggle('hidden', logged);
+    authGuest && authGuest.classList.toggle('md:flex', !logged);
+    authUser && authUser.classList.toggle('hidden', !logged);
+    authUser && authUser.classList.toggle('block', logged);
+  }
+  $('#logoutBtn') && $('#logoutBtn').addEventListener('click', () => {
+    setLoggedIn(false);
+    closeAvatarMenu();
+  });
+
+  /* ------------------------------------------------------------
+     3) 移动端汉堡菜单
+     ------------------------------------------------------------ */
+  function setMobileMenu(open) {
+    if (!mobileMenu) return;
+    mobileMenu.classList.toggle('is-open', open);
+    hamburger && hamburger.setAttribute('aria-expanded', String(open));
+    if (hamburgerIc) {
+      hamburgerIc.classList.toggle('fa-bars', !open);
+      hamburgerIc.classList.toggle('fa-xmark', open);
+    }
+  }
+  hamburger && hamburger.addEventListener('click', () => {
+    setMobileMenu(!mobileMenu.classList.contains('is-open'));
+  });
+  $$('[data-close-menu]').forEach(a => a.addEventListener('click', () => setMobileMenu(false)));
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) setMobileMenu(false);
+  });
+
+  /* ------------------------------------------------------------
+     4) Hero 轮播：自动播放（5s）+ 淡入淡出 + 箭头 + 圆点 + 触屏滑动
+     ------------------------------------------------------------ */
+  const hero       = $('#hero');
+  const slides     = $$('[data-slide]');
+  const dotsWrap   = $('#heroDots');
+  const prevBtn    = $('#heroPrev');
+  const nextBtn    = $('#heroNext');
+  const AUTOPLAY_MS = 5000;
+  let current = 0;
+  let timer = null;
+
+  /* 4.1 生成圆点指示器 */
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.setAttribute('role', 'tab');
+    dot.setAttribute('aria-label', '切换到第 ' + (i + 1) + ' 张');
+    dot.className = 'h-2.5 rounded-full bg-white/45 transition-all duration-300 hover:bg-white/80';
+    dot.addEventListener('click', () => goTo(i, true));
+    dot.addEventListener('mouseenter', pause);
+    dot.addEventListener('mouseleave', play);
+    dotsWrap && dotsWrap.appendChild(dot);
+  });
+  const dots = dotsWrap ? $$('button', dotsWrap) : [];
+
+  /* 4.2 切换到指定幻灯片（带重放文字动画） */
+  function goTo(index, userAction) {
+    if (!slides.length) return;
+    current = (index + slides.length) % slides.length;
+
+    slides.forEach((slide, i) => {
+      const active = i === current;
+      slide.classList.toggle('is-active', active);
+      slide.setAttribute('aria-hidden', String(!active));
+      // 重置并重放「文字渐显」动画
+      if (active) {
+        $$('.animate-fadeUp', slide).forEach(el => {
+          el.style.animation = 'none';
+          void el.offsetWidth; // 强制回流
+          el.style.animation = '';
+        });
+      }
+    });
+
+    dots.forEach((dot, i) => {
+      const active = i === current;
+      dot.classList.toggle('w-7', active);
+      dot.classList.toggle('bg-white', active);
+      dot.classList.toggle('w-2.5', !active);
+      dot.classList.toggle('bg-white/45', !active);
+      dot.setAttribute('aria-selected', String(active));
+    });
+
+    if (userAction) restart();
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+  function play() { pause(); timer = setInterval(next, AUTOPLAY_MS); }
+  function pause() { if (timer) { clearInterval(timer); timer = null; } }
+  function restart() { pause(); play(); }
+
+  nextBtn && nextBtn.addEventListener('click', () => { next(); restart(); });
+  prevBtn && prevBtn.addEventListener('click', () => { prev(); restart(); });
+  hero && hero.addEventListener('mouseenter', pause);
+  hero && hero.addEventListener('mouseleave', play);
+  hero && hero.addEventListener('focusin', pause);
+  hero && hero.addEventListener('focusout', play);
+  document.addEventListener('visibilitychange', () => document.hidden ? pause() : play());
+  hero && hero.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { next(); restart(); }
+    if (e.key === 'ArrowLeft')  { prev(); restart(); }
+  });
+
+  /* 4.3 触屏滑动切换 */
+  let touchX = 0;
+  hero && hero.addEventListener('touchstart', e => {
+    touchX = e.changedTouches[0].clientX;
+    pause();
+  }, { passive: true });
+  hero && hero.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 45) { dx < 0 ? next() : prev(); }
+    play();
+  }, { passive: true });
+
+  goTo(0);
+  play();
+
+  /* ------------------------------------------------------------
+     5) 搜索框：点击图标展开 / 收起
+     ------------------------------------------------------------ */
+  const searchToggle = $('#searchToggle');
+  const searchInput  = $('#searchInput');
+  let searchOpen = false;
+  function setSearch(open) {
+    if (!searchInput) return;
+    searchOpen = open;
+    searchInput.classList.toggle('scale-x-0', !open);
+    searchInput.classList.toggle('opacity-0', !open);
+    searchInput.classList.toggle('w-10', !open);
+    searchInput.classList.toggle('w-52', open);
+    searchInput.classList.toggle('lg:w-64', open);
+    searchInput.classList.toggle('scale-x-100', open);
+    searchInput.classList.toggle('opacity-100', open);
+    if (open) searchInput.focus();
+  }
+  searchToggle && searchToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    if (searchOpen && searchInput.value.trim()) {
+      // 占位：此处可跳转搜索结果页
+      alert('搜索（占位）：' + searchInput.value.trim());
+      return;
+    }
+    setSearch(!searchOpen);
+  });
+  searchInput && searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && searchInput.value.trim()) {
+      alert('搜索（占位）：' + searchInput.value.trim());
+    }
+    if (e.key === 'Escape') setSearch(false);
+  });
+  document.addEventListener('click', e => {
+    if (searchOpen && !e.target.closest('#searchInput') && !e.target.closest('#searchToggle')) setSearch(false);
+  });
+
+  /* ------------------------------------------------------------
+     6) 数字滚动增长（进入视口触发，缓动函数 easeOutCubic）
+     ------------------------------------------------------------ */
+  function animateCounter(el) {
+    if (el.dataset.done) return;
+    el.dataset.done = '1';
+    const target   = parseFloat(el.dataset.target || '0');
+    const duration = parseInt(el.dataset.duration || '1600', 10);
+    const start    = performance.now();
+
+    function step(now) {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased).toLocaleString('en-US');
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target.toLocaleString('en-US');
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ------------------------------------------------------------
+     7) 活动倒计时：根据「距今 N 天」计算并渲染日期 + 剩余天数
+     ------------------------------------------------------------ */
+  function fmtDateTime(d) {
+    const w = '日一二三四五六'[d.getDay()];
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+           String(d.getDate()).padStart(2, '0') + ' 周' + w + ' 19:00';
+  }
+  function initEvents() {
+    const now = new Date();
+    // 每个活动海报左上角记录「距今 N 天」，据此换算出真实开始时间（当天 19:00）
+    $$('[data-start-in-days]').forEach(el => {
+      const days   = parseInt(el.dataset.startInDays, 10) || 0;
+      const target = new Date(now.getTime() + days * 86400000);
+      target.setHours(19, 0, 0, 0);
+      el.dataset.targetTs = String(target.getTime());
+      if (el.hasAttribute('data-event-date')) el.textContent = fmtDateTime(target);
+    });
+
+    function refreshCountdown() {
+      const t = Date.now();
+      $$('.event-countdown').forEach(el => {
+        const ts = parseInt(el.dataset.targetTs || '0', 10);
+        if (!ts) return;
+        el.textContent = Math.max(0, Math.ceil((ts - t) / 86400000));
+      });
+    }
+    refreshCountdown();
+    // 每 10 分钟刷新，跨天自动更新
+    setInterval(refreshCountdown, 600000);
+  }
+  initEvents();
+
+  /* ------------------------------------------------------------
+     8) 模块 / 卡片滚动淡入（IntersectionObserver）
+     ------------------------------------------------------------ */
+  const revealItems = $$('[data-reveal]');
+  if ('IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const delay = parseInt(entry.target.dataset.delay || '0', 10);
+        setTimeout(() => entry.target.classList.add('is-visible'), delay);
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+    revealItems.forEach(el => revealObserver.observe(el));
+
+    // 数字滚动：复用同一套观察器逻辑，单独监听 .counter
+    const counterObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCounter(entry.target);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    $$('.counter').forEach(el => counterObserver.observe(el));
+  } else {
+    // 兜底：不支持时直接显示
+    revealItems.forEach(el => el.classList.add('is-visible'));
+    $$('.counter').forEach(el => el.textContent = el.dataset.target);
+  }
+
+  /* ------------------------------------------------------------
+     9) 弹窗：登录 / 注册 + 活动报名表单
+     ------------------------------------------------------------ */
+  const modal        = $('#modal');
+  const modalPanel   = $('#modalPanel');
+  const modalTitle   = $('#modalTitle');
+  const modalSubtitle= $('#modalSubtitle');
+  const modalForm    = $('#modalForm');
+  const formSuccess  = $('#formSuccess');
+  const formError    = $('#formError');
+  let   lastFocused  = null;
+  let   currentModal = 'signup';
+
+  const MODAL_TEXT = {
+    login: {
+      title: '登录 / 注册',
+      subtitle: '使用学号登录协会平台，首次登录即自动注册（占位表单）。',
+      submit: '登录 / 注册'
+    },
+    signup: {
+      title: '报名信息',
+      subtitle: '请填写以下信息完成报名，我们会在 24 小时内与你联系。',
+      submit: '提交报名'
+    }
+  };
+
+  function openModal(type, eventName) {
+    if (!modal) return;
+    lastFocused  = document.activeElement;
+    currentModal = MODAL_TEXT[type] ? type : 'signup';
+    const eventMode = currentModal === 'signup' && !!eventName;
+
+    const conf = MODAL_TEXT[currentModal];
+    if (modalTitle)    modalTitle.textContent = eventMode ? '活动报名' : conf.title;
+    if (modalSubtitle) modalSubtitle.textContent = eventMode ? '报名活动：' + eventName : conf.subtitle;
+    const submitBtn = modalForm && $('button[type="submit"]', modalForm);
+    if (submitBtn) submitBtn.textContent = eventMode ? '提交报名' : MODAL_TEXT.signup.submit;
+
+    // 重置表单状态
+    modalForm && modalForm.reset();
+    modalForm && modalForm.classList.remove('hidden');
+    formSuccess && formSuccess.classList.add('hidden');
+    formSuccess && formSuccess.classList.remove('flex');
+    formError && formError.classList.add('hidden');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => {
+      modalPanel && modalPanel.classList.remove('scale-95', 'opacity-0');
+      modalPanel && modalPanel.classList.add('scale-100', 'opacity-100');
+      const first = modalForm && $('input', modalForm);
+      first && first.focus();
+    });
+  }
+
+  function closeModal() {
+    if (!modal || modal.classList.contains('hidden')) return;
+    modalPanel && modalPanel.classList.add('scale-95', 'opacity-0');
+    modalPanel && modalPanel.classList.remove('scale-100', 'opacity-100');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+      // 复位为表单态，避免下次打开时停留在「提交成功」页面
+      modalForm && modalForm.classList.remove('hidden');
+      formSuccess && formSuccess.classList.add('hidden');
+      formSuccess && formSuccess.classList.remove('flex');
+      formError && formError.classList.add('hidden');
+      lastFocused && lastFocused.focus && lastFocused.focus();
+    }, 220);
+  }
+
+  $$('[data-open-modal]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      openModal(btn.dataset.openModal, btn.dataset.eventName);
+    });
+  });
+  $('#modalClose') && $('#modalClose').addEventListener('click', closeModal);
+  $('#modalOverlay') && $('#modalOverlay').addEventListener('click', closeModal);
+  $('#successClose') && $('#successClose').addEventListener('click', closeModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal(); setMobileMenu(false); setSearch(false); }
+  });
+
+  /* 9.1 表单校验 + 提交（占位：后续替换为真实后端接口） */
+  modalForm && modalForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const name  = $('#fName');
+    const sid   = $('#fSid');
+    const phone = $('#fPhone');
+    const errs  = [];
+
+    if (!name.value.trim()) errs.push('请填写姓名');
+    if (!/^\d{6,}$/.test(sid.value.trim())) errs.push('学号格式不正确（至少 6 位数字）');
+    if (!/^1[3-9]\d{9}$/.test(phone.value.trim())) errs.push('手机号格式不正确');
+
+    if (errs.length) {
+      if (formError) {
+        formError.textContent = errs[0];
+        formError.classList.remove('hidden');
+      }
+      return;
+    }
+    if (formError) formError.classList.add('hidden');
+
+    /* ====== 接入后端的位置 ======
+       fetch('/api/signup', { method:'POST', headers:{'Content-Type':'application/json'},
+         body: JSON.stringify({ name:name.value, sid:sid.value, phone:phone.value }) })
+    ============================ */
+
+    modalForm.classList.add('hidden');
+    if (formSuccess) {
+      const isLogin = currentModal === 'login';
+      const t = $('#successTitle');
+      const d = $('#successDesc');
+      if (t) t.textContent = isLogin ? '登录成功！' : '提交成功！';
+      if (d) d.textContent = isLogin
+        ? '欢迎回来，正在进入个人中心…（占位提示）'
+        : '我们已收到你的报名信息，请留意 QQ 群与短信通知。';
+      formSuccess.classList.remove('hidden');
+      formSuccess.classList.add('flex');
+    }
+    setLoggedIn(true); // 演示：提交后视为已登录，展示头像下拉菜单
+  });
+
+  /* ------------------------------------------------------------
+     10) 回到顶部按钮（滚动超过 600px 显示）
+     ------------------------------------------------------------ */
+  const backTop = document.createElement('button');
+  backTop.type = 'button';
+  backTop.setAttribute('aria-label', '回到顶部');
+  backTop.className = 'fixed bottom-6 right-6 z-40 grid h-11 w-11 place-items-center rounded-full ' +
+    'bg-brand-600 text-white shadow-lg shadow-brand-600/30 opacity-0 pointer-events-none ' +
+    'transition-all duration-300 hover:bg-brand-deep hover:-translate-y-1';
+  backTop.innerHTML = '<i class="fa-solid fa-arrow-up" aria-hidden="true"></i>';
+  document.body.appendChild(backTop);
+  backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  function updateBackToTop() {
+    const show = window.scrollY > 600;
+    backTop.classList.toggle('opacity-0', !show);
+    backTop.classList.toggle('pointer-events-none', !show);
+    backTop.classList.toggle('opacity-100', show);
+  }
+
+  /* 初始化：设定导航初始主题与高亮状态 */
+  setNavTheme(false);
+  updateActiveLink();
+  updateBackToTop();
+})();
+</script>
+</body>
+</html>
