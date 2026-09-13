@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="珠海科技学院计算机协会 —— 个人中心（占位页面）" />
+<meta name="theme-color" content="#1E3A8A" />
+<meta name="robots" content="noindex" />
+<title>个人中心 | 珠海科技学院计算机协会</title>
+
+<!-- ============================================================
+     0. 依赖与全局配置（与 index.html 保持一致的设计系统）
+     ============================================================ -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            deep: '#1E3A8A',
+            600: '#2563EB',
+            100: '#DBEAFE',
+            ink: '#0F172A'
+          },
+          cyanx: '#06B6D4',
+          neon: '#22C55E'
+        },
+        fontFamily: {
+          sans: ['Inter', 'Roboto', 'system-ui', '-apple-system', 'Segoe UI',
+                 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif']
+        },
+        borderRadius: { card: '12px', btn: '8px' },
+        boxShadow: {
+          card: '0 4px 14px rgba(15, 23, 42, .06)',
+          'card-hover': '0 18px 40px -12px rgba(30, 58, 138, .32)'
+        }
+      }
+    }
+  };
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563EB'/%3E%3Cpath d='M20 22l-8 10 8 10M44 22l8 10-8 10M37 16l-10 32' stroke='white' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+
+<style>
+  /* --- 文字入场动画：淡入 + 上滑 --- */
+  @keyframes popIn {
+    0%   { opacity: 0; transform: translateY(26px) scale(.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .pop-in { animation: popIn .9s cubic-bezier(.2,.7,.3,1) both; }
+
+  /* 背景图缓慢推进，营造镜头感 */
+  @keyframes slowZoom {
+    0%   { transform: scale(1); }
+    100% { transform: scale(1.08); }
+  }
+  .bg-zoom { animation: slowZoom 18s ease-out both; }
+
+  /* 尊重系统「减少动态效果」设置 */
+  @media (prefers-reduced-motion: reduce) {
+    .pop-in, .bg-zoom { animation: none !important; }
+  }
+</style>
+</head>
+
+<body class="h-full overflow-hidden bg-brand-ink font-sans antialiased">
+
+<!-- ============================================================
+     1. 全屏背景图 + 深色遮罩（保证文字可读）
+     ============================================================ -->
+<div class="fixed inset-0 -z-10">
+  <img src="assets/profile-bg.png" alt=""
+       class="bg-zoom h-full w-full object-cover object-center" />
+  <!-- 遮罩：整体压暗 + 中心径向加深，突出中央文案 -->
+  <div class="absolute inset-0 bg-slate-950/45"></div>
+  <div class="absolute inset-0"
+       style="background:radial-gradient(ellipse at center, rgba(15,23,42,.15) 0%, rgba(15,23,42,.72) 100%)"></div>
+</div>
+
+<!-- ============================================================
+     2. 右上角返回按钮（回到上一页）
+     ============================================================ -->
+<header class="fixed inset-x-0 top-0 z-30 flex items-center justify-end px-4 py-4 sm:px-6 lg:px-8">
+  <!-- 左上角：站点标识，点击回首页（保持与主站一致的品牌露出） -->
+  <a href="index.html" class="group mr-auto flex items-center gap-2.5 rounded-btn px-2 py-2 text-white/90 transition hover:bg-white/10 hover:text-white" aria-label="返回协会首页">
+    <span class="grid h-9 w-9 place-items-center rounded-card bg-gradient-to-br from-brand-600 to-cyanx text-white shadow-md transition-transform duration-300 group-hover:scale-105">
+      <i class="fa-solid fa-code text-sm" aria-hidden="true"></i>
+    </span>
+    <span class="hidden text-sm font-bold tracking-tight sm:block">珠海科技学院计算机协会</span>
+  </a>
+
+  <button id="backBtn" type="button"
+          class="btn inline-flex items-center gap-2 rounded-btn border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition hover:border-white/50 hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyanx">
+    <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>
+    <span>返回</span>
+  </button>
+</header>
+
+<!-- ============================================================
+     3. 中央文案
+     ============================================================ -->
+<main class="relative z-20 flex h-full items-center justify-center px-6">
+  <div class="pop-in max-w-3xl text-center">
+    <h1 class="text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_6px_24px_rgba(0,0,0,.65)] sm:text-6xl lg:text-7xl">
+      你不会以为真的有吧？
+    </h1>
+    <p class="pop-in mt-6 text-base font-light text-blue-50/90 drop-shadow-[0_2px_10px_rgba(0,0,0,.6)] sm:text-lg"
+       style="animation-delay:.25s">
+      个人中心还在建设中，敬请期待。
+    </p>
+    <div class="pop-in mt-10 flex flex-wrap items-center justify-center gap-4" style="animation-delay:.45s">
+      <a href="index.html"
+         class="btn inline-flex items-center gap-2 rounded-btn bg-gradient-to-r from-cyanx to-neon px-6 py-3 text-sm font-bold text-slate-900 shadow-lg shadow-cyanx/30 hover:shadow-xl">
+        <i class="fa-solid fa-house" aria-hidden="true"></i>回到首页
+      </a>
+      <button id="backBtn2" type="button"
+              class="btn inline-flex items-center gap-2 rounded-btn border border-white/30 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur hover:bg-white/20">
+        <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>返回上一页
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- ============================================================
+     4. 返回逻辑：优先回退浏览器历史，无历史可回时回首页
+     （直接输网址打开本页时，避免出现"点了没反应"）
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  var HOME = 'index.html';
+
+  /* 判断是否存在可回退的站内历史：
+     从 index.html 跳转过来时 referrer 为站内地址；
+     同页跳转可能无 referrer，此时 history.length 会大于 1。 */
+  function canGoBack() {
+    try {
+      if (document.referrer) {
+        return new URL(document.referrer).origin === window.location.origin;
+      }
+    } catch (e) {
+      /* referrer 解析失败时走下面的长度判断 */
+    }
+    return window.history.length > 1;
+  }
+
+  function goBack() {
+    if (canGoBack()) {
+      window.history.back();
+    } else {
+      window.location.href = HOME;
+    }
+  }
+
+  ['backBtn', 'backBtn2'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', goBack);
+  });
+})();
+</script>
+</body>
+</html>
